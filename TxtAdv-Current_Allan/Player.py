@@ -1,6 +1,7 @@
+from Container import Container
+from Item import Item
 
-
-class Player():
+class Player(Container):
     """
     Any data relating to the player himself should go in
     the Player class.
@@ -8,6 +9,6 @@ class Player():
     """
     def __init__(self):
         self.loc = None #what room is the player in
-        
-        
-        
+        self.contents = {} # because we're also a container
+    
+    

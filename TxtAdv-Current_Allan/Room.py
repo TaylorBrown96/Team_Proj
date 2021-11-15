@@ -1,13 +1,16 @@
+#Room Class
+
+from Container import Container
 from Item import Item
 
-
-class Room():
+class Room(Container):
     """class for holding room names descriptions, exits"""       
     def __init__(self, name, description, exits):
         self.name = name
         self.description = description
         self.exits = exits
-        self.contents = [] # First pass at items in rooms
+        self.contents = {} # First pass at items in rooms 
+        #dictionary for containers
         
     def __str__(self):
         """ contains the name, description, and exits in a human-readable fashion"""
@@ -20,12 +23,13 @@ class Room():
             text += ": " + self.exits[direction]  # prints in format "North: Living Room", etc.
             text += "\n"
         # print items in room, if any
-        if self.contents == []:
+        if self.contents == {}:
             text += "There's no items here.\n"
         else:
             text += "In this room you see: \n"
-            for item in self.contents:
-                text += item.name + ": " + item.description + "\n"
+            text += self.listContents()
+            # for item in self.contents:
+            #     text += item.name + ": " + item.description + "\n"
         return text
 
 #    def __repr__(self):  # we're not using this yet
@@ -49,11 +53,11 @@ class Room():
         
     def addItem(self, item):
         """ used to add item into a room"""
-        self.contents.append(item)
+        self.add(item)
     
     def removeItem(self, item):
         if item in self.contents:
-            self.contents.pop(item)
+            self.remove(item)
     
 def main():
     """Currently used for testing

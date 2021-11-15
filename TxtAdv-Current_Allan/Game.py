@@ -10,7 +10,7 @@ class Game:
     def __init__(self):
         """ Initialize object (with no rooms) """
         self.rooms = { } # stored in dictionary
-        # self.here = None # TODO: move this to Player
+        # self.here = None # TODO: move this to Player#
         # Player is used to store location(loc) and etc.
         self.player = Player()
         
@@ -81,7 +81,7 @@ class Game:
                     towngate.name : towngate,
                     world.name : world }
         #item setup
-        pizza = Item("Pizza", "A very fresh, hot pizza.")
+        pizza = Item("pizza", "A very fresh, hot pizza.")
         sword = Item("sword", "Recently forged, and it's very sharp.")
         livingroom.addItem(pizza)
         blacksmithroom.addItem(sword)
@@ -136,6 +136,8 @@ class Game:
         elif verb == 'drop':
             item = words[1]
             self.commandDrop(item)
+        elif verb == 'inv':
+            self.commandInv()
 
         else: # first word is verb
             print("I don't know how to ",words[0])
@@ -169,16 +171,15 @@ class Game:
         #TODO: actually do this
         #We'll need to remove the item from the current
         #rpp, and then add it to the inventory.
-        print("You try to get the", itemName)
-        #Broken code until container is fixed. (SEE CONTAINER)
-        '''
+        #ITEM DUPE
         if self.here.contains(itemName):
             item = self.here.contents[itemName]
-            self.here.moveItemTo(item, self.player)
-            print("You try to get", itemName)
+            self.here.moveItemTo(item, self.player.contents)
+            print("You got the ", itemName)
+            print(self.player.listContents())
         else:
-            print("You try to get the", itemName)
-        '''
+            print("There's no ", itemName,"here.")
+        
     def commandDrop(self, itemName):
         """ remove the item from the player 
         (if its there) and place it in the room
@@ -186,16 +187,19 @@ class Game:
         #TODO: actually do this
         #We'll need to remove the item from the current
         #rpp, and then add it to the inventory.
-        print("You try to drop the", itemName)
-        '''
-        if self.here.contains(itemName):
-            item = self.here.contents[itemName]
-            self.here.moveItemTo(item, self.here)
-            print("You try to get", itemName)
+        
+        if self.player.contains(itemName):
+            item = self.player.contents[itemName]
+            self.player.moveItemTo(item, self.here)
+            print("You drop the", itemName,".")
         else:
-            print("You try to get the", itemName)
-        '''
-    
+            print("You don't have the", itemName,"to drop.")
+        
+    def commandInv(self):
+        # self.player.Inventory()
+        for item in self.player.contents:
+            print(item)
+        
 def main():
     game = Game()
     game.setup()

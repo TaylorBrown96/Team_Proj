@@ -7,8 +7,7 @@ class Player:
         self.inventory = [items.Knife(),
                           items.LasGun(),
                           items.Bandaid(),
-                          items.HealingStim(),
-                          items.StandardArmySuit()]
+                          items.HealingStim()]
 
         self.x = world.start_tile_location[0]
         self.y = world.start_tile_location[1]

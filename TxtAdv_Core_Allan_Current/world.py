@@ -3,7 +3,6 @@ import enemies
 import Characters
 import items
 
-
 class MapTile:
     def __init__(self, x, y):
         self.x = x
@@ -35,15 +34,15 @@ class StartTile(MapTile):
 class BoringTile(MapTile):
     def intro_text(self):
         return """
-        This area seems to be abandoned, as there is nothing here.
+        This area seems to be abandoned there is nothing here.
         """
 
 
 class EscapeTile(MapTile):
     def intro_text(self):
         return """
-        Reaching near the surface by elevator, you see signs of light, 
-        breathe the fresh air, and quicken the pace to reach it.
+        You see signs of light, breathe the fresh air, and quicken the pace
+        to reach it.
         
         The cave rumbles and rocks falling down as the flower source
         holding up the structure has perished. You run even faster, dodging
@@ -61,7 +60,6 @@ class EscapeTile(MapTile):
 
 class EnemyTile(MapTile):
     def __init__(self, x, y):
-        # self.reduction = reduction
         r = random.randint(1,3)
         if r == 1:
             self.enemy = enemies.Spider()
@@ -84,14 +82,8 @@ class EnemyTile(MapTile):
         return text
 
     def modify_player(self, player):
-        r_damage = player.inventory.StandardArmySuit.damage_reduction()
         if self.enemy.is_alive():
-            print(self.enemy.damage)
-            damage = self.enemy.damage * r_damage
-            
-            print(damage)
-
-            player.hp = player.hp - damage
+            player.hp = player.hp - self.enemy.damage
             print("Enemy does {} damage. You have {} HP remaining."
                   .format(self.enemy.damage, player.hp))
 
@@ -99,7 +91,7 @@ class EnemyTile(MapTile):
 class TraderTile(MapTile):
     def intro_text(self):
         return """
-        A weird contraption that contrasts your surroundings is visible in the distance...
+        A weird contraption that contrasts your surroundinds is visible in the distance...
         There's a sign saying "Trading Station" it might have some good items availible.
         """
 
@@ -189,7 +181,7 @@ class FindCredsTile(MapTile):
             
             You found some gold coins near their bodies.
             
-            "There might be some use for this, instead of leaving this lying around." thinking to yourself.
+            "There might be some use for this, instead of leaving this to rust."thinking to yourself.
             """
 
 class TreasureTile(MapTile):
@@ -205,7 +197,8 @@ class TreasureTile(MapTile):
             self.weapon = self.inventory
         elif r == 2:
             self.inventory = [items.Bandaid(),
-                          items.HealingStim()]
+                          items.HealingStim(),
+                          items.NanoHeal()]
             self.comsumables = self.inventory
         self.treasure_claimed = False
         super().__init__(x, y)
@@ -220,20 +213,6 @@ class TreasureTile(MapTile):
             elif self.inventory == self.consumables:
                 r = random.randint(1,2)
                 player.inventory.append(randomHeals[r])
-                
-                
-    def intro_text(self):
-        if self.treasure_claimed:
-            return"""
-            You have already obtained the treasure in this room 
-            """
-        else:
-            return"""
-            You found a treasure chest lying around this room. It's not locked so
-            you opened it and found its *item* 
-            
-            "This might be useful in the forseeable." thinking to yourself.
-            """
 
 class MimicTreasureTile(MapTile):
     def __init__(self, x, y):
@@ -254,8 +233,6 @@ class MimicTreasureTile(MapTile):
         if not self.enemy.is_alive():
             player.inventory.append(items.Bandaid)
 
-
-
 #how to create map tiles
 class Survivor(MapTile):
     def __init__(self, x, y):
@@ -270,9 +247,12 @@ class Survivor(MapTile):
         return text
 
 class LockedExit(MapTile):
-    
+    def intro_text(self):
+        return """
+        There's a locked door. Only with a key card can open the door.
+        """
     def modify_player(self, player):
-        if items.KeyCard in player.inventory:
+        if player.inventory[items.name] == items.KeyCard.name():
             return player.x - 1
         else:
             return player.y + 1
@@ -281,8 +261,8 @@ class BossRoom(MapTile):
     def __init__(self, x, y):
         self.enemy= enemies.FlowerSource()
         self.alive_text = "An agitated flower four times the size of brute sitting at the center of the room, guarding the elevator. \nIt feels your hostility and wants you be devoured."
-        self.dead_text = "The the giant flower wilts and reveals a corpse hidden within. You see something shinny within the corpse.\n\nIt's a KeyCard!\n\
-                          You place the key card in the elevator and it opens the locked elevator."
+        self.dead_text = "The corpse of the mother alien lies on the ground you see something shinny in her mouth.\n\nIt's a Key!\n\
+                          You place the key in the door and it opens the locked elevator."
 
         super().__init__(x, y)
         
@@ -296,7 +276,7 @@ class BossRoom(MapTile):
             print("Enemy does {} damage. You have {} HP remaining."
                   .format(self.enemy.damage, player.hp))
         if not self.enemy.is_alive():
-            player.inventory.append(items.KeyCard())
+            player.inventory.append(items.Key())
         
 
 """
@@ -350,14 +330,14 @@ def tile_at(x, y):
 
 
 world_dsl = """
-|ET|LE|TT|FC|EN|FC|BT|  |EN|  |
-|  |  |BR|  |EN|  |FC|EN|BT|EN|
-|  |  |  |  |  |  |  |  |  |BT|
-|EN|BT|ST|  |TT|FC|BT|EN|  |FC|
+|  |BR|TT|FC|EN|FC|BT|EN|  |  |
+|  |  |BT|EN|BT|BT|FC|EN|BT|EN|
+|  |ET|LE|  |  |  |  |  |  |BT|
+|EN|  |  |  |TT|FC|BT|EN|  |FC|
 |FC|  |BT|FC|EN|  |FC|  |BT|TT|
-|FC|BT|EN|  |FC|  |EN|  |EN|  |
-|FC|  |BT|FC|EN|  |BT|  |BT|SR|
-|SR|  |TC|  |MC|  |EN|EN|EN|MC|
+|FC|TC|  |  |FC|  |EN|  |EN|  |
+|MC|ST|  |FC|EN|  |BT|  |BT|SR|
+|SR|LE|EN|  |FC|  |EN|EN|EN|  |
 """
 
 

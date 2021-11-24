@@ -56,6 +56,6 @@ class Brute(Enemy):
 
 class FlowerSource(Enemy):
     def __init__(self):
-        self.name = "Mother Alien"
+        self.name = "Mutated Flower"
         self.hp = 80
         self.damage = 15

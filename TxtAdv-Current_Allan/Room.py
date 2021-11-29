@@ -58,7 +58,30 @@ class Room(Container):
     def removeItem(self, item):
         if item in self.contents:
             self.remove(item)
-    
+
+class Door:
+    def __init__(self, description, state, locked):
+        self.description = description
+        self.state = state
+        self.locked = locked
+    def look(self):
+        print("Description: " + str(self.description))
+        print("Locked: " + str(self.locked))
+    def open(self):
+        self.state = 1
+        self.description = "The door is open."
+    def close(self):
+        self.state = 0
+        self.description = "The door is closed."
+    def lock(self):
+        self.locked = True
+        print("The door is locked.")
+    def unlock(self):
+        self.locked = False
+        print("The door is unlocked.")
+
+
+
 def main():
     """Currently used for testing
     TODO: implement doctests"""
@@ -126,7 +149,74 @@ def main():
     loc = roomDict[loc.exits["north"]] # find room to North, go there
     loc.describe()
 
+    door1 = Door("The door is closed.", 0, True)
+    inv = []
+    key = "key"
+    print("You are in a room with a door. You see a key on the floor.")
     
+    while True:
+        
+        i = input("> ")
+    
+        if i == "get key":    
+            if key in inv:
+                print("You already have the key.")
+            else:
+                print("You pick up the key.")
+                inv += [key]
+                print(inv)
+    
+        elif i == "lock door":
+            if key not in inv:
+                print("You do not have the key.")
+            else:
+                if door1.state == 0 and door1.locked == False:
+                    door1.lock()
+                elif door1.state == 0 and door1.locked == True:
+                    print("The door is already locked.")
+                elif door1.state == 1:
+                    print("You must first close the door.")
+                else:
+                    print("You can't do that.")
+                
+        elif i == "unlock door":
+            if key not in inv:
+                print("You do not have the key.")
+            else:
+                if door1.state == 0 and door1.locked == True:
+                    door1.unlock()
+                elif door1.state == 0 and door1.locked == False:
+                    print("The door is already unlocked,")
+                elif door1.state == 1:
+                    print("The door is already unlocked and open.")
+                else:
+                    print("You can't do that.")
+                
+        elif i == "open door":
+            if door1.state == 0:
+                if door1.locked == True:
+                    print("The door is locked.")
+                elif door1.locked == False:
+                    door1.open()
+            else:
+                print("The door is already open.")
+            
+        elif i == "close door":
+            if door1.state == 0:
+                print("The door is already closed.")
+            else:
+                door1.close()
+    
+        elif i == "i":
+            print(inv)
+    
+        elif i == "q":
+            break
+    
+        else:
+            print("I don't understand.")
+            
+        door1.look()
     
 
 if __name__ == "__main__":

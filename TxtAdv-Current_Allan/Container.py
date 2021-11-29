@@ -17,7 +17,7 @@ class Container:
         """
         if self.contents[item.name]:#Works better than the
             del self.contents[item.name]#contains function
-            print(self.contents)
+            #print(self.contents)# debug code
         
     #Broken code
     def moveItemTo(self, item, destination):
@@ -36,7 +36,7 @@ class Container:
         return text
     
     """THE SOURCE OF BREAK-AGE"""
-    # def containsItem(self, itemName):
+    # def (self, itemName):
     #     """quick way to check if item is present. """
     #     # keys() gives us a list of names of items present
     #     itemNameList = list(self.contents.keys())

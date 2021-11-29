@@ -1,6 +1,6 @@
 from Room import Room
 from Player import Player 
-from Item import Item
+from Item import BaseItem, UsableItem, PuzzleItem
 from Container import Container
 # Game - Holds Game code
 
@@ -62,9 +62,17 @@ class Game:
         towngate = Room("Town Gate", "This is the gate to the outside world \.",
                          {"north": "Town Center","south":"World"})
         
-        world = Room("World", "\.",
-                         {"east": ""})
         
+        world = Room("World", "WorldMap.",
+                         {"east": "","south": "","east": ""})
+        dungeon = Room("Dungeon", "WorldMap.",
+                         {"east": ""})
+        forest = Room("DeepForest", "WorldMap.",
+                         {"east": ""})
+        lakemarsh = Room("LakeMarsh", "WorldMap.",
+                         {"east": ""})
+        tombdungeon = Room("AncientTomb", "WorldMap.",
+                         {"east": ""})
         
         self.rooms = { bathroom.name: bathroom,
                     saveroom.name: saveroom,
@@ -78,10 +86,20 @@ class Game:
                     noblemerchantarea.name : noblemerchantarea,
                     wizardshop.name : wizardshop,
                     towngate.name : towngate,
-                    world.name : world }
+                    
+                    world.name : world,
+                    dungeon.name : dungeon,
+                    forest.name : forest,
+                    lakemarsh.name : lakemarsh,
+                    tombdungeon.name : tombdungeon
+                    }
         #item setup
-        pizza = Item("pizza", "A very fresh, hot pizza.")
-        sword = Item("sword", "Recently forged, and it's very sharp.")
+        bed = BaseItem("bed", "A fluffy bed.")
+        bed.canGet = False
+        pizza = BaseItem("pizza", "A very fresh, hot pizza.")
+        sword = UsableItem("sword", "A long sword hanging on the wall.")
+        
+        saveroom.addItem(bed)
         livingroom.addItem(pizza)
         blacksmithroom.addItem(sword)
         
@@ -104,43 +122,48 @@ class Game:
         command = command.lower()
         words = command.split()
         #print(words)
-        if len(words) < 1:
-            print("No input detected")
-            return
-        
-        verb = words[0]
-        if verb == 'go':
-            direction = words[1]
-            self.commandGo(direction)
-            """
-            # CommandGo relocate
-            # # Can we go in the chosen direction from here?
-            # if self.player.loc.exits.get(direction) == None:
-            #     print("You can't go that way.")
-            # else: # this key does exist
-            #     newRoomName = self.player.loc.exits[direction]
-            #     newRoom = self.rooms[newRoomName]
-            #     self.player.loc = newRoom
-            #     if self.isVerbose:
-            #         self.player.loc.describe()
-            """
-        elif verb == 'look':
-            self.here.describe()
-        elif verb == 'quit':
-            self.isplaying = False
-            print("Game Over!")
-        elif verb == 'get':
-            item = words[1]
-            self.commandGet(item)
-        elif verb == 'drop':
-            item = words[1]
-            self.commandDrop(item)
-        elif verb == 'inv':
-            self.commandInv()
-
-        else: # first word is verb
-            print("I don't know how to ",words[0])
+        try:
+            if len(words) < 1:
+                print("No input detected")
+                return
             
+            verb = words[0]
+            if verb == 'go':
+                direction = words[1]
+                self.commandGo(direction)
+                """
+                # CommandGo relocate
+                # # Can we go in the chosen direction from here?
+                # if self.player.loc.exits.get(direction) == None:
+                #     print("You can't go that way.")
+                # else: # this key does exist
+                #     newRoomName = self.player.loc.exits[direction]
+                #     newRoom = self.rooms[newRoomName]
+                #     self.player.loc = newRoom
+                #     if self.isVerbose:
+                #         self.player.loc.describe()
+                """
+            elif verb == 'look':
+                self.here.describe()
+            elif verb == 'quit':
+                self.isplaying = False
+                print("Game Over!")
+            elif verb == 'get':
+                item = words[1]
+                self.commandGet(item)
+            elif verb == 'drop':
+                item = words[1]
+                self.commandDrop(item)
+            elif verb == 'inv':
+                self.commandInv()
+            elif verb == 'use':
+                item = words[1]
+                self.commandUse(item)
+    
+            else: # first word is verb
+                print("I don't know how to ",words[0])
+        except:
+            IndexError(print("Action invalid/non-existent has been entered."))
     def commandGo(self, direction):
         """
         input: direction to move. 
@@ -171,13 +194,16 @@ class Game:
         #We'll need to remove the item from the current
         #rpp, and then add it to the inventory.
         #ITEM DUPE
-        if self.here.contains(itemName):
-            item = self.here.contents[itemName]
-            self.here.moveItemTo(item, self.player)
-            print("You got the ", itemName)
-            print(self.player.listContents())
+        if self.here.contents[itemName].canGet == False:
+            print(itemName,"cannot be picked up.")
         else:
-            print("There's no ", itemName,"here.")
+            if self.here.contents[itemName]:
+                item = self.here.contents[itemName]
+                self.here.moveItemTo(item, self.player)
+                print("You got the ", itemName)
+                print(self.player.listContents())
+            else:
+                print("There's no ", itemName,"here.")
         
     def commandDrop(self, itemName):
         """ remove the item from the player 
@@ -187,7 +213,7 @@ class Game:
         #We'll need to remove the item from the current
         #rpp, and then add it to the inventory.
         
-        if self.player.contains(itemName):
+        if self.player.contents[itemName]:
             item = self.player.contents[itemName]
             self.player.moveItemTo(item, self.here)
             print("You drop the", itemName,".")
@@ -197,8 +223,18 @@ class Game:
     def commandInv(self):
         # self.player.Inventory()
         for item in self.player.contents:
-            print(item)
-        
+            print(item) 
+    
+    def commandUse(self, itemName):
+        if self.player.contents[itemName]:
+            items = self.player.contents[itemName]
+            items.use()
+            print("You used the", itemName,".")
+            print(self.player.listContents())
+        else:
+            print("You don't have the", itemName,"in your inventory.")
+    
+    
 def main():
     game = Game()
     game.setup()

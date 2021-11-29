@@ -1,6 +1,6 @@
 from Player import Player
 from Room import Room
-from Item import Item
+from Item import BaseItem, UsableItem, PuzzleItem
 from Game import Game
 
 
@@ -43,8 +43,8 @@ class MyGameLoader:
                     blacksmithroom.name: blacksmithroom,
                     magicroom.name: magicroom }
         #item setup
-        pizza = Item("Pizza", "A very fresh, hot pizza.")
-        sword = Item("sword", "Recently forged, and it's very sharp.")
+        pizza = BaseItem("Pizza", "A very fresh, hot pizza.")
+        sword = UsableItem("sword", "A longsword hanging on the wall.")
         livingroom.addItem(pizza)
         blacksmithroom.addItem(sword)
         

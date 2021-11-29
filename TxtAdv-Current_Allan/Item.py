@@ -33,7 +33,7 @@ class Item:
             desc += " It's too heavy to lift."
         return desc
                  
-                 
+    
     @property 
     def canGet(self):
         """ True / False -- item can be picked up. """
@@ -44,17 +44,83 @@ class Item:
         """ True / False - item can be picked up. """
         self._canGet = setting
 
+class BaseItem(Item):
+     """
+     This inherits from BaseItem. 
+     We'll discuss how init(), etc. work as we go.
+     """
+     def __init__(self, name, description):
+        # "super" runs the equiv function from the base class
+        super().__init__(name, description) 
+        
+class UsableItem(BaseItem):
+    """
+    Works like a regular item, except that
+    it has one or more usable verbs
+    that will cause it to make changes.
+    """    
+    def __init__(self, name, description):
+        super().__init__(name, description)
+        # item is "unused" by default
+        self._wasUsed = False
+        
+    def use(self, useVerb = "use"):
+        """
+        use() - call to make the object 
+        change to its other state.
+        TODO: this needs more thought
 
+        Parameters
+        ----------
+        useVerb : TYPE, optional
+            DESCRIPTION. The default is "use".
+
+        Returns
+        -------
+        None.
+
+        """
+        if self._wasUsed == True:
+            print("You already used this item.")
+        else:
+            print("You attempt to",useVerb,"the item.")
+            self._wasUsed = True
+        
+    
+    @property
+    def description(self):
+        """return a decorated description. 
+        Decoration = things like (too heavy to lift)
+        This example just polishes the object.""" 
+        desc = self._description
+        # decorate with extra info as needed
+        if self._wasUsed == True:
+            desc += " It's very shiny."
+        else:
+            desc += " It's pretty rusty."
+        return desc
+
+class PuzzleItem(BaseItem):
+    def __init__(self, name, description):
+        super().__init__(name, description)
+        
 
 #test code
 def main():
-    key = Item("key", "It's a bit rusty.")
+    key = PuzzleItem("key", "It's a bit rusty.")
     
-    sword = Item("sword", "It's very sharp.")
+    sword = UsableItem("sword", "just a long sword.")
     
-    stuff = [key,sword]
+    bed = BaseItem("bed", "A fluffy bed.")
+    bed.canGet = False
+    
+    stuff = [key,sword, bed]
     for item in stuff:
-        print(item)
+        print(item.name, "-", item.description)
+    print()
+    sword.use()
+    for item in stuff:
+        print(item.name, "-", item.description)
     
     
     

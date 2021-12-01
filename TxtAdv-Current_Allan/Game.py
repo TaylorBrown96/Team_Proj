@@ -1,4 +1,4 @@
-from Room import Room
+from Room import Room, Door
 from Player import Player 
 from Item import BaseItem, UsableItem, PuzzleItem
 from Container import Container
@@ -74,6 +74,8 @@ class Game:
         tombdungeon = Room("AncientTomb", "WorldMap.",
                          {"east": ""})
         
+        doortest = door1 = Door("BathroomDoor","The door is closed.", 0, False)
+        
         self.rooms = { bathroom.name: bathroom,
                     saveroom.name: saveroom,
                     livingroom.name: livingroom,
@@ -93,14 +95,20 @@ class Game:
                     lakemarsh.name : lakemarsh,
                     tombdungeon.name : tombdungeon
                     }
+        #Door Setup
+        saveroom.addDoor(doortest,"west")
         #item setup
         bed = BaseItem("bed", "A fluffy bed.")
         bed.canGet = False
         pizza = BaseItem("pizza", "A very fresh, hot pizza.")
         sword = UsableItem("sword", "A long sword hanging on the wall.")
-        
+        testkey = PuzzleItem("Keys", "test key")
+        key = PuzzleItem("key", "A key to unlock something.")
         saveroom.addItem(bed)
+        
+        saveroom.addItem(testkey)
         livingroom.addItem(pizza)
+        livingroom.addItem(key)
         blacksmithroom.addItem(sword)
         
         self.here  = saveroom
@@ -122,7 +130,8 @@ class Game:
         command = command.lower()
         words = command.split()
         #print(words)
-        try:
+        #try:
+        if True:
             if len(words) < 1:
                 print("No input detected")
                 return
@@ -159,11 +168,24 @@ class Game:
             elif verb == 'use':
                 item = words[1]
                 self.commandUse(item)
+            elif verb == 'unlock':
+                door = words[1]
+                self.commandUnlock(door)
+            elif verb == 'open':
+                door = words[1]
+                self.commandOpen(door)
+            elif verb == 'lock':
+                door = words[1]
+                self.commandLock(door)
+            elif verb == 'close':
+                door = words[1]
+                self.commandClose(door)
+            
     
             else: # first word is verb
                 print("I don't know how to ",words[0])
-        except:
-            IndexError(print("Action invalid/non-existent has been entered."))
+        #except:
+        #    IndexError(print("Action invalid/non-existent has been entered."))
     def commandGo(self, direction):
         """
         input: direction to move. 
@@ -173,7 +195,26 @@ class Game:
         # Can we go in the chosen direction from here?
         if self.here.exits.get(direction) == None:
             print("You can't go that way.")
-        else: # this key does exist
+        
+        if self.here.door != None: ##debug
+            # print("There's a door blocking", self.here.lockedexit)
+            # print("you're going", direction, "door is at", self.here.lockedexit)
+            if self.here.lockedexit == direction:
+                #print("the door should stop you if it's closed") debug
+                # if self.here.door.state == 0: debug
+                #     print("the door is closed.") debug
+                # there's a door and it might be in our way
+                if self.here.door.locked == True:
+                    print("The door is locked.") 
+                    print("There is a door on the way.")
+                    return
+                if self.here.door.state == 0:
+                    print("The door is closed.")
+                    print("There is a door on the way.")
+                    return
+            # if door is open and unlocked, go through!
+
+        if self.here.exits.get(direction) != None: # this key does exist
             newRoomName = self.here.exits[direction]
             newRoom = self.rooms[newRoomName]
             self.here = newRoom
@@ -193,14 +234,13 @@ class Game:
         #TODO: actually do this
         #We'll need to remove the item from the current
         #rpp, and then add it to the inventory.
-        #ITEM DUPE
         if self.here.contents[itemName].canGet == False:
             print(itemName,"cannot be picked up.")
         else:
             if self.here.contents[itemName]:
                 item = self.here.contents[itemName]
                 self.here.moveItemTo(item, self.player)
-                print("You got the ", itemName)
+                print("You got the", itemName)
                 print(self.player.listContents())
             else:
                 print("There's no ", itemName,"here.")
@@ -233,6 +273,33 @@ class Game:
             print(self.player.listContents())
         else:
             print("You don't have the", itemName,"in your inventory.")
+    def commandOpen(self, door):
+        door = self.here.door
+        if door != None:
+            door.open()
+            door.look()
+    def commandUnlock(self, door):
+        door = self.here.door
+        if self.player.contents[itemName]:
+            item = self.player.contents[itemName]
+            if item in self.player.contents:
+                if door != None:
+                    door.unlock()
+                    door.look()
+    def commandClose(self, door):
+        door = self.here.door
+        if door != None:
+            door.close()
+            door.look()
+    def commandLock(self, door):
+        door = self.here.door
+        if self.player.contents[itemName]:
+            item = self.player.contents[itemName]
+            if item in self.player.contents:
+                if door != None:
+                    door.lock()
+                    door.look()
+    
     
     
 def main():

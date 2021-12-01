@@ -19,7 +19,7 @@ class Container:
             del self.contents[item.name]#contains function
             #print(self.contents)# debug code
         
-    #Broken code
+    
     def moveItemTo(self, item, destination):
         #t TODO: confirm destination is a CONTAINER!
         #print("@@ moving", item, "from", self, "to", destination)#debug code

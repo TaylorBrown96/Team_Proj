@@ -9,6 +9,8 @@ class Room(Container):
         self.name = name
         self.description = description
         self.exits = exits
+        self.door = None
+        self.lockedexit = None
         self.contents = {} # First pass at items in rooms 
         #dictionary for containers
         
@@ -30,6 +32,11 @@ class Room(Container):
             text += self.listContents()
             # for item in self.contents:
             #     text += item.name + ": " + item.description + "\n"
+        if self.door != None:
+            text += "There is a door here to the: " + self.lockedexit + "\n"
+            text += self.door.name + " "
+            text += self.door.description
+            
         return text
 
 #    def __repr__(self):  # we're not using this yet
@@ -58,9 +65,14 @@ class Room(Container):
     def removeItem(self, item):
         if item in self.contents:
             self.remove(item)
-
-class Door:
-    def __init__(self, description, state, locked):
+        
+    def addDoor(self, door, lockedexit):
+        self.door = door
+        self.lockedexit = lockedexit
+        
+class Door():
+    def __init__(self, name, description, state, locked):
+        self.name = name
         self.description = description
         self.state = state
         self.locked = locked
@@ -79,7 +91,16 @@ class Door:
     def unlock(self):
         self.locked = False
         print("The door is unlocked.")
-
+    def exits(self):
+        if self.locked == False:
+            if self.state == 1:
+                #door is passable
+                return True
+            else:
+                print("Door is closed.")
+                return False
+        else:
+            return False
 
 
 def main():
@@ -149,7 +170,7 @@ def main():
     loc = roomDict[loc.exits["north"]] # find room to North, go there
     loc.describe()
 
-    door1 = Door("The door is closed.", 0, True)
+    door1 = Door("Door","The door is closed.", 0, True)
     inv = []
     key = "key"
     print("You are in a room with a door. You see a key on the floor.")

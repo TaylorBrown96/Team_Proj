@@ -1,4 +1,4 @@
-from Room import Room, Door
+from Room import Room, Door, Chest
 from Player import Player 
 from Item import BaseItem, UsableItem, PuzzleItem
 from Container import Container
@@ -73,8 +73,13 @@ class Game:
                          {"east": ""})
         tombdungeon = Room("AncientTomb", "WorldMap.",
                          {"east": ""})
-        
-        doortest = door1 = Door("BathroomDoor","The door is closed.", 0, False)
+        #door initialize
+        bathdoor = Door("BathDoor","The door is closed.", 0, False,0,111)
+        frontdoor = Door("FrontDoor","The door is closed",0,True,0,112)
+        #chest initialize
+        enchantedchest = Chest("EnchantedChest","A sealed luxurious chest.", 0, True,250,251)
+        craftchest = Chest("CraftChest","A chest with blacksmith materials.", 0, True,250,290)
+        woodchest = Chest("WoodChest","A wooden decrepit chest.", 0, True,250, 299)
         
         self.rooms = { bathroom.name: bathroom,
                     saveroom.name: saveroom,
@@ -96,21 +101,41 @@ class Game:
                     tombdungeon.name : tombdungeon
                     }
         #Door Setup
-        saveroom.addDoor(doortest,"west")
+        saveroom.addDoor(bathdoor,"west")
+        bathroom.addDoor(bathdoor,"east")
+        livingroom.addDoor(frontdoor, "south")
+        house.addDoor(frontdoor,"north")
+        #Chest Setup
+        # saveroom.addChest(woodchest)#test
+        saveroom.addChest(enchantedchest)#test
+        blacksmithroom.addChest(craftchest)
         #item setup
         bed = BaseItem("bed", "A fluffy bed.")
         bed.canGet = False
         pizza = BaseItem("pizza", "A very fresh, hot pizza.")
+        wand = UsableItem("wand","A stick with mystical energies.")
         sword = UsableItem("sword", "A long sword hanging on the wall.")
-        testkey = PuzzleItem("Keys", "test key")
-        key = PuzzleItem("key", "A key to unlock something.")
+        
+        
+        bathroomkey = PuzzleItem("bathroomkey", "BathDoor to lock in ",111)
+        frontkey = PuzzleItem("frontdoorkey", "Your house key",112)
+        kingdomkey = PuzzleItem("kingdomkey", "A key to unlock any lock doors.",0)
+        bronzechestkey = PuzzleItem("bronzechestkey","A key to unlock wood and bronzechests", 299)
+        enchantedkey = PuzzleItem("enchantedkey","An unbreakable key that unlock chests", 250)
+        bathroomkey.canDrop = False
+        frontkey.canDrop = False
+        kingdomkey.canDrop = False
+        # item adding on rooms
         saveroom.addItem(bed)
-        
-        saveroom.addItem(testkey)
+        livingroom.addItem(frontkey)
+        saveroom.addItem(bathroomkey)
+        saveroom.addItem(enchantedkey)#test
         livingroom.addItem(pizza)
-        livingroom.addItem(key)
+        saveroom.addItem(kingdomkey)
         blacksmithroom.addItem(sword)
-        
+        # item adding on chests
+        enchantedchest.addItem(wand)
+        # start room
         self.here  = saveroom
         
         self.here.describe()#Turn 1 look
@@ -126,11 +151,24 @@ class Game:
         pass
     
     def playerAction(self):
+        """
+        # Command
+        go (direction)
+        look
+        get (chest(optional))(item)
+        drop (item)
+        inv
+        use(item)
+        open (door/chest)
+        close (door/chest)
+        lock (door/chest)(itemkey)
+        unlock (door/chest)(itemkey)
+        """
         command = input(">")
         command = command.lower()
         words = command.split()
         #print(words)
-        #try:
+        # try:
         if True:
             if len(words) < 1:
                 print("No input detected")
@@ -140,26 +178,23 @@ class Game:
             if verb == 'go':
                 direction = words[1]
                 self.commandGo(direction)
-                """
-                # CommandGo relocate
-                # # Can we go in the chosen direction from here?
-                # if self.player.loc.exits.get(direction) == None:
-                #     print("You can't go that way.")
-                # else: # this key does exist
-                #     newRoomName = self.player.loc.exits[direction]
-                #     newRoom = self.rooms[newRoomName]
-                #     self.player.loc = newRoom
-                #     if self.isVerbose:
-                #         self.player.loc.describe()
-                """
             elif verb == 'look':
                 self.here.describe()
+                if self.here.door != None:
+                    self.here.door.look()
+                if self.here.chest != None:
+                    self.here.chest.look()
             elif verb == 'quit':
                 self.isplaying = False
                 print("Game Over!")
             elif verb == 'get':
-                item = words[1]
-                self.commandGet(item)
+                if len(words) == 2:
+                    item = words[1]
+                    self.commandGet(item)
+                elif len(words) == 3:
+                    item = words[2]
+                    chest = words[1]
+                    self.commandchestGet(chest, item)
             elif verb == 'drop':
                 item = words[1]
                 self.commandDrop(item)
@@ -168,24 +203,27 @@ class Game:
             elif verb == 'use':
                 item = words[1]
                 self.commandUse(item)
-            elif verb == 'unlock':
-                door = words[1]
-                self.commandUnlock(door)
             elif verb == 'open':
-                door = words[1]
-                self.commandOpen(door)
-            elif verb == 'lock':
-                door = words[1]
-                self.commandLock(door)
+                lid = words[1]
+                self.commandOpen(lid)
             elif verb == 'close':
-                door = words[1]
-                self.commandClose(door)
+                lid = words[1]
+                self.commandClose(lid)
+            elif verb == 'lock':
+                lid = words[1]
+                item = words[2]
+                self.commandLock(lid, item)
+            elif verb == 'unlock':
+                lid = words[1]
+                item = words[2]
+                self.commandUnlock(lid, item)
+            
             
     
             else: # first word is verb
                 print("I don't know how to ",words[0])
-        #except:
-        #    IndexError(print("Action invalid/non-existent has been entered."))
+        # except:
+        #     print("Action invalid/non-existent has been entered.")
     def commandGo(self, direction):
         """
         input: direction to move. 
@@ -226,6 +264,34 @@ class Game:
         @here.setter
         def here(self, room):
             self.player.loc = room
+
+    def commandchestGet(self, lid, itemName):
+        """ remove the item from the room (if its there)
+        and place it in player inventory
+        """
+        #TODO: actually do this
+        #We'll need to remove the item from the current
+        #rpp, and then add it to the inventory.
+        chest = self.here.chest
+        if lid == chest.name.lower():
+            if chest != None:
+                if chest.state == 1:
+                    if chest.contents[itemName].canGet == False:
+                        print(itemName,"cannot be picked up.")
+                    else:
+                        if chest.contents[itemName]:
+                            item = chest.contents[itemName]
+                            chest.moveItemTo(item, self.player)
+                            print("You got the", itemName)
+                            print(self.player.listContents())
+                        else:
+                            print("There's no ", itemName,"here.")
+                else:
+                    print("The chest is closed, open it first.")
+            else:
+                print("There is no chest here.")
+        else:
+            print("Get what chest??")
             
     def commandGet(self, itemName):
         """ remove the item from the room (if its there)
@@ -253,12 +319,15 @@ class Game:
         #We'll need to remove the item from the current
         #rpp, and then add it to the inventory.
         
-        if self.player.contents[itemName]:
-            item = self.player.contents[itemName]
-            self.player.moveItemTo(item, self.here)
-            print("You drop the", itemName,".")
+        if self.here.contents[itemName].canDrop == False:
+            print(itemName,"cannot be picked up.")
         else:
-            print("You don't have the", itemName,"to drop.")
+            if self.player.contents[itemName]:
+                item = self.player.contents[itemName]
+                self.player.moveItemTo(item, self.here)
+                print("You drop the", itemName,".")
+            else:
+                print("You don't have the", itemName,"to drop.")
         
     def commandInv(self):
         # self.player.Inventory()
@@ -273,33 +342,138 @@ class Game:
             print(self.player.listContents())
         else:
             print("You don't have the", itemName,"in your inventory.")
-    def commandOpen(self, door):
+    def commandOpen(self, lid):
         door = self.here.door
-        if door != None:
-            door.open()
-            door.look()
-    def commandUnlock(self, door):
+        chest = self.here.chest
+        if lid == door.name.lower():
+            if door != None:
+                if door.state == 0:
+                    if door.locked == True:
+                        print("The door is locked.")
+                    elif door.locked == False:
+                        door.open()
+                        door.look() #check the door state
+                else:
+                    print("The door is already open.")
+        elif lid == chest.name.lower():
+            if chest != None:
+                if chest.state == 0:
+                    if chest.locked == True:
+                        print("The door is locked.")
+                    elif chest.locked == False:
+                        chest.open()
+                        chest.look() #check the chest state
+                else:
+                    print("The door is already open.")
+        else:
+            print("I don't understand.")
+    def commandClose(self, lid):
         door = self.here.door
-        if self.player.contents[itemName]:
-            item = self.player.contents[itemName]
-            if item in self.player.contents:
-                if door != None:
-                    door.unlock()
-                    door.look()
-    def commandClose(self, door):
+        if lid == door.name.lower():
+            if door != None:
+                if door.state == 0:
+                    print("The door is already closed.")
+                else:
+                    door.close()
+                    door.look() #check the door state
+        else:
+            print("I don't understand.")
+    def commandUnlock(self, lid, itemName):
+        chest = self.here.chest
         door = self.here.door
-        if door != None:
-            door.close()
-            door.look()
-    def commandLock(self, door):
+        item = self.player.contents[itemName]
+        if lid == door.name.lower():
+            if door != None:
+                if item.name in self.player.contents:
+                    print(item)
+                    if item.itemsid == door.doorsid:
+                        
+                        if door.state == 0 and door.locked == True:
+                            door.unlock()
+                            door.look() #check the door state
+                        elif door.state == 0 and door.locked == False:
+                            print("The door is already unlocked,")
+                        elif door.state == 1:
+                            print("The door is already unlocked and open.")
+                        else:
+                            print("You can't do that.")
+                    elif item.itemsid == door.keysid:
+                        
+                        if door.state == 0 and door.locked == True:
+                            door.unlock()
+                            door.look() #check the door state
+                        elif door.state == 0 and door.locked == False:
+                            print("The door is already unlocked,")
+                        elif door.state == 1:
+                            print("The door is already unlocked and open.")
+                        else:
+                            print("You can't do that.")
+                    else:
+                        print("Wrong key.")
+        elif lid == chest.name.lower():
+            if chest != None:
+                if item.name in self.player.contents:
+                    print(item)
+                    if item.itemsid == chest.chestsid:
+                        if chest.state == 0 and chest.locked == True:
+                            chest.unlock()
+                            chest.look()
+                            if item.name == 'enchantedkey':
+                                print(item.name," has been used.")
+                                print(item.name," is unbreakable.")
+                        elif chest.state == 0 and chest.locked == False:
+                            print("The chest is already unlocked,")
+                        elif chest.state == 1:
+                            print("The chest is already unlocked and open.")
+                        else:
+                            print("You can't do that.")
+                    elif item.itemsid == chest.keysid:
+                        if chest.state == 0 and chest.locked == True:
+                            chest.unlock()
+                            chest.look()
+                            print(item.name," has been broken after use.")
+                            self.player.deleter(item)
+                        elif chest.state == 0 and chest.locked == False:
+                            print("The chest is already unlocked,")
+                        elif chest.state == 1:
+                            print("The chest is already unlocked and open.")
+                        else:
+                            print("You can't do that.")
+        else:
+            print("I don't understand.")
+    def commandLock(self, lid, itemName):
         door = self.here.door
-        if self.player.contents[itemName]:
-            item = self.player.contents[itemName]
-            if item in self.player.contents:
-                if door != None:
-                    door.lock()
-                    door.look()
-    
+        item = self.player.contents[itemName]
+        if lid == door.namelower():
+            if door != None:
+                if item.name in self.player.contents:
+                    print(item)
+                    #print("You tried to lock,", doorName)
+                    if item.itemsid == door.doorsid:
+                    
+                        if door.state == 0 and door.locked == False:
+                            door.lock()
+                            door.look() #check the door state
+                        elif door.state == 0 and door.locked == True:
+                            print("The door is already locked.")
+                        elif door.state == 1:
+                            print("You must first close the door.")
+                        else:
+                            print("You can't do that.")
+                    elif item.itemsid == door.keysid:
+                        if door.state == 0 and door.locked == False:
+                            door.lock()
+                            door.look() #check the door state
+                        elif door.state == 0 and door.locked == True:
+                            print("The door is already locked.")
+                        elif door.state == 1:
+                            print("You must first close the door.")
+                        else:
+                            print("You can't do that.")
+                    else:
+                        print("Wrong key.")
+        else:
+            print("I don't understand.")
     
     
 def main():

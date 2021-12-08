@@ -1,5 +1,5 @@
 from Container import Container
-from Item import Item
+from Item import BaseItem, UsableItem, PuzzleItem
 
 class Player(Container):
     """

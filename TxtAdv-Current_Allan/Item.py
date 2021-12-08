@@ -15,6 +15,7 @@ class Item:
          
          # set basic flags
          self._canGet = True # default to gettable
+         self._canDrop = True
          
     def __str__(self):
         return self.name + " : " + self.description
@@ -36,7 +37,6 @@ class Item:
     
     @property 
     def canGet(self):
-        """ True / False -- item can be picked up. """
         return self._canGet
     
     @canGet.setter 
@@ -44,6 +44,16 @@ class Item:
         """ True / False - item can be picked up. """
         self._canGet = setting
 
+    @property 
+    def canDrop(self):
+        return self._canDrop
+    
+    @canDrop.setter 
+    def canDrop(self, setting):
+        """This will be the true/false setting for if an item can be dropped
+            or not"""
+        self._canDrop = setting
+        
 class BaseItem(Item):
      """
      This inherits from BaseItem. 
@@ -68,7 +78,7 @@ class UsableItem(BaseItem):
         """
         use() - call to make the object 
         change to its other state.
-        TODO: this needs more thought
+        TODO: this needs more development
 
         Parameters
         ----------
@@ -91,23 +101,25 @@ class UsableItem(BaseItem):
     def description(self):
         """return a decorated description. 
         Decoration = things like (too heavy to lift)
-        This example just polishes the object.""" 
-        desc = self._description
-        # decorate with extra info as needed
-        if self._wasUsed == True:
-            desc += " It's very shiny."
-        else:
-            desc += " It's pretty rusty."
-        return desc
+        """ 
+        
+        """Example code bellow"""
+        # desc = self._description
+        # # decorate with extra info as needed
+        # if self._wasUsed == True:
+        #     desc += " It's very shiny."
+        # else:
+        #     desc += " It's pretty rusty."
+        # return desc
 
 class PuzzleItem(BaseItem):
-    def __init__(self, name, description):
+    def __init__(self, name, description, itemsid):
         super().__init__(name, description)
-        
+        self.itemsid = itemsid # test for key match
 
 #test code
 def main():
-    key = PuzzleItem("key", "It's a bit rusty.")
+    key = PuzzleItem("key", "It's a bit rusty.", '111')
     
     sword = UsableItem("sword", "just a long sword.")
     
@@ -122,7 +134,15 @@ def main():
     for item in stuff:
         print(item.name, "-", item.description)
     
-    
+    if key.itemid == "111":
+        print("key match")
+    else:
+        print("key doesn't match")
+        
+    if key.itemid == "112":
+        print("key match")
+    else:
+        print("key doesn't match")
     
 if __name__ == "__main__":
     main()

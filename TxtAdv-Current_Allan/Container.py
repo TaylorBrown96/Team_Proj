@@ -11,15 +11,17 @@ class Container:
          self.contents[item.name] = item
     def remove(self, item):
         #print("@@@ removing", item, "from", self)# debug code
-        """Function glitch ITEM DUPE
+        """
         ### Contains code is BUGGED and Broke everything
         # if self.contains(item):
         """
-        if self.contents[item.name]:#Works better than the
+        if self.contents[item.name]:#Works better than the previous one
             del self.contents[item.name]#contains function
             #print(self.contents)# debug code
         
-    
+    def deleter(self, item):
+        if self.contents[item.name]:
+            del self.contents[item.name]
     def moveItemTo(self, item, destination):
         #t TODO: confirm destination is a CONTAINER!
         #print("@@ moving", item, "from", self, "to", destination)#debug code
@@ -31,9 +33,22 @@ class Container:
         for key in self.contents:
             text += key
             text += " : " 
-            text += self.contents[key].description
+            if self.contents[key].description == None:
+                text += self.contents[key]._description
+            else:
+                text += self.contents[key].description
             text += "\n"
         return text
+
+    def listchestContents(self):
+        text = ""
+        for key in self.contents:
+            text += key
+            text += " : " 
+            text += self.contents[key]._description
+            text += "\n"
+        return text
+
     
     """THE SOURCE OF BREAK-AGE"""
     # def (self, itemName):
